@@ -1,5 +1,6 @@
 #include "CppUTest/CommandLineTestRunner.h"
 #include "LedDriver.h"
+#include "mocks/RuntimeErrorStub.h"
 
 /* ************************************************************
  *     LED Driver Tests
@@ -50,18 +51,17 @@ TEST(LedDriver, TurnOnMultipleLeds)
 	LedDriver_TurnOn(9);
 	LedDriver_TurnOn(8);
 	CHECK_EQUAL(0x180, virtualLeds);
-	// 0x180 : 000001100000000
-	//       : fdcba9876543210
+	// 0x180 : 0000000110000000
+	//       : 0fedcba987654321
 }
 
 TEST(LedDriver, TurnOffAnyLed)
 {
-	LedDriver_TurnOn(9);
-	LedDriver_TurnOn(8);
+	LedDriver_TurnAllOn();
 	LedDriver_TurnOff(8);
-	CHECK_EQUAL(0x100, virtualLeds);
-	// 0x100 : 000001000000000
-	//       : fdcba9876543210
+	CHECK_EQUAL(0xFF7F, virtualLeds);
+	// 0xFF7F : 1111111101111111
+	//        : 0fedcba987654321
 }
 
 TEST(LedDriver, AllOn)
@@ -70,8 +70,55 @@ TEST(LedDriver, AllOn)
 	CHECK_EQUAL(0xffff, virtualLeds);
 }
 
-TEST(LedDriver, )
+TEST(LedDriver, LedDriverIsNotReadable)
 {
+	virtualLeds = 0xffff;
+	LedDriver_TurnOn(8);
+	CHECK_EQUAL(0x80, virtualLeds);
+}
+
+TEST(LedDriver, UpperAndLowerBounds)
+{
+	LedDriver_TurnOn(1);
+	LedDriver_TurnOn(16);
+
+	CHECK_EQUAL( 0x8001, virtualLeds);
+	// 0x8001 : 1000000000000001
+	//        : 0fedcba987654321
+}
+
+TEST(LedDriver, OutOfBoundsTurnOnDoesNoHarm)
+{
+	CHECK_EQUAL( 0x0000, virtualLeds);
+	LedDriver_TurnOn(-1);
+	CHECK_EQUAL( 0x0000, virtualLeds);
+	LedDriver_TurnOn(0);
+	CHECK_EQUAL( 0x0000, virtualLeds);
+	LedDriver_TurnOn(17);
+	CHECK_EQUAL( 0x0000, virtualLeds);
+	LedDriver_TurnOn(3141);
+	CHECK_EQUAL( 0x0000, virtualLeds);
+}
+
+TEST(LedDriver, OutOfBoundsTurnOffDoesNoHarm)
+{
+	LedDriver_TurnAllOn();
+	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	LedDriver_TurnOff(-1);
+	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	LedDriver_TurnOff(0);
+	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	LedDriver_TurnOff(17);
+	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	LedDriver_TurnOff(3141);
+	CHECK_EQUAL( 0xFFFF, virtualLeds);
+}
+
+TEST(LedDriver, OutofBoundsProducesRuntimeError)
+{
+	LedDriver_TurnOn(-1);
+	STRCMP_EQUAL("LED Driver: out-of-bounds LED", RuntimeErrorStub_GetLastError());
+	CHECK_EQUAL(-1, RuntimeErrorStub_GetLastParameter() );
 }
 
 int main( int argc, char **argv )
