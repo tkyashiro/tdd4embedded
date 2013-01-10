@@ -1,0 +1,10 @@
+*.swp
+*.o
+*.log
+*.exe
+Makefile
+
+*/*/.deps
+
+game/
+gametest/
