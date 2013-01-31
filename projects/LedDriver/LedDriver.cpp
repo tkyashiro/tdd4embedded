@@ -2,8 +2,10 @@
 #include "utils/RuntimeError.h"
 
 // ****************************************
-// TDD for Embedded : RUNTIME_ERROR
+// TDD for Embedded : 
 // ****************************************
+
+enum {FIRST_LED = 1, LAST_LED = 16};
 
 // íËêî
 static const int   OUT_OF_BOUNDS_PARAM   = -1;
@@ -26,6 +28,21 @@ static void updateHardware()
 	*ledsAddress = ledsImage;
 }
 
+static bool IsLedOutOfBounds(int ledNumber)
+{
+	return ( ledNumber < FIRST_LED || ledNumber > LAST_LED );
+}
+
+static void setLedImageBit(int ledNumber)
+{
+	ledsImage |= convertLedNumberToBit(ledNumber);
+}
+
+static void clearLedImageBit(int ledNumber)
+{
+	ledsImage &= ~(convertLedNumberToBit(ledNumber));
+}
+
 void LedDriver_Create(uint16_t *address)
 {
 	ledsAddress = address;
@@ -39,21 +56,21 @@ void LedDriver_Destroy(void)
 
 void LedDriver_TurnOn(int ledNumber)
 {
-	if( ledNumber <= 0 || ledNumber > 16 ){
+	if( IsLedOutOfBounds(ledNumber) ){
 		RUNTIME_ERROR(OUT_OF_BOUNDS_MESSAGE, OUT_OF_BOUNDS_PARAM);
 		return;
 	}
-	ledsImage |= convertLedNumberToBit(ledNumber);
+	setLedImageBit(ledNumber);
 	updateHardware();
 }
 
 void LedDriver_TurnOff(int ledNumber)
 {
-	if( ledNumber <= 0 || ledNumber > 16 ){
+	if( IsLedOutOfBounds(ledNumber) ){
 		RUNTIME_ERROR(OUT_OF_BOUNDS_MESSAGE, OUT_OF_BOUNDS_PARAM);
 		return;
 	}
-	ledsImage &= ~(convertLedNumberToBit(ledNumber));
+	clearLedImageBit(ledNumber);
 	updateHardware();
 }
 
@@ -61,5 +78,24 @@ void LedDriver_TurnAllOn(void)
 {
 	ledsImage = ALL_LEDS_ON;
 	updateHardware();
+}
+
+void LedDriver_TurnAllOff(void)
+{
+	ledsImage = ALL_LEDS_OFF;
+	updateHardware();
+}
+
+bool LedDriver_IsOn(int ledNumber)
+{
+	if( IsLedOutOfBounds(ledNumber) ){
+		return false;
+	}
+	return (ledsImage & convertLedNumberToBit(ledNumber));
+}
+
+bool LedDriver_IsOff(int ledNumber)
+{
+	return ! LedDriver_IsOn(ledNumber);
 }
 

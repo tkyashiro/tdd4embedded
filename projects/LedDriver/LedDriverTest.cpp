@@ -70,6 +70,13 @@ TEST(LedDriver, AllOn)
 	CHECK_EQUAL(0xffff, virtualLeds);
 }
 
+TEST(LedDriver, AllOff)
+{
+	LedDriver_TurnAllOn();
+	LedDriver_TurnAllOff();
+	CHECK_EQUAL(0x0000, virtualLeds);
+}
+
 TEST(LedDriver, LedDriverIsNotReadable)
 {
 	virtualLeds = 0xffff;
@@ -114,11 +121,44 @@ TEST(LedDriver, OutOfBoundsTurnOffDoesNoHarm)
 	CHECK_EQUAL( 0xFFFF, virtualLeds);
 }
 
-TEST(LedDriver, OutofBoundsProducesRuntimeError)
+IGNORE_TEST(LedDriver, OutofBoundsProducesRuntimeError)
 {
 	LedDriver_TurnOn(-1);
 	STRCMP_EQUAL("LED Driver: out-of-bounds LED", RuntimeErrorStub_GetLastError());
 	CHECK_EQUAL(-1, RuntimeErrorStub_GetLastParameter() );
+}
+
+TEST(LedDriver, IsOn)
+{
+	CHECK_EQUAL(false, LedDriver_IsOn(11));
+	LedDriver_TurnOn(11);
+	CHECK_EQUAL(true, LedDriver_IsOn(11));
+}
+
+TEST(LedDriver, OutOfBoundsLedsAreAlwaysOff)
+{
+	CHECK_EQUAL(true, LedDriver_IsOff(0));
+	CHECK_EQUAL(true, LedDriver_IsOff(17));
+
+	CHECK_EQUAL(false, LedDriver_IsOn(0));
+	CHECK_EQUAL(false, LedDriver_IsOn(17));
+}
+
+TEST(LedDriver, IsOff)
+{
+	CHECK_EQUAL(true, LedDriver_IsOff(12));
+	LedDriver_TurnOn(12);
+	CHECK_EQUAL(false, LedDriver_IsOff(12));
+}
+
+TEST(LedDriver, TurnOffMultipleLeds)
+{
+	LedDriver_TurnAllOn();
+	LedDriver_TurnOff(9);
+	LedDriver_TurnOff(8);
+	CHECK_EQUAL((~0x180)&0xFFFF, virtualLeds);
+	// 0x180 : 0000000110000000
+	//       : 0fedcba987654321
 }
 
 int main( int argc, char **argv )
