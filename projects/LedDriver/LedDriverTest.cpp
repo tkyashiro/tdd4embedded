@@ -15,7 +15,7 @@
  * _ Check out-of-bounds values
  * *************************************************************/
 
-static uint16_t virtualLeds = 0xffff;
+static uint16_t virtualLeds = LED_IMAGE(0xffff);
 TEST_GROUP(LedDriver)
 {
 	TEST_SETUP(){
@@ -26,31 +26,31 @@ TEST_GROUP(LedDriver)
 };
 
 
-TEST(LedDriver, LedsOffAfterCrate)
+TEST(LedDriver, LedsOffAfterCreate)
 {
-	uint16_t virtualLeds = 0xffff;
+	uint16_t virtualLeds = LED_IMAGE(0xffff);
 	LedDriver_Create(&virtualLeds);
-	LONGS_EQUAL(0, virtualLeds);
+	LONGS_EQUAL(LED_IMAGE(0x0000), virtualLeds);
 }
 
 TEST(LedDriver, TurnOnLedOne)
 {
 	LedDriver_TurnOn(1);
-	CHECK_EQUAL(1, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0x0001), virtualLeds);
 }
 
 TEST(LedDriver, TurnOffLedOne)
 {
 	LedDriver_TurnOn(1);
 	LedDriver_TurnOff(1);
-	CHECK_EQUAL(0, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0x0000), virtualLeds);
 }
 
 TEST(LedDriver, TurnOnMultipleLeds)
 {
 	LedDriver_TurnOn(9);
 	LedDriver_TurnOn(8);
-	CHECK_EQUAL(0x180, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0x180), virtualLeds);
 	// 0x180 : 0000000110000000
 	//       : 0fedcba987654321
 }
@@ -59,7 +59,7 @@ TEST(LedDriver, TurnOffAnyLed)
 {
 	LedDriver_TurnAllOn();
 	LedDriver_TurnOff(8);
-	CHECK_EQUAL(0xFF7F, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0xFF7F), virtualLeds);
 	// 0xFF7F : 1111111101111111
 	//        : 0fedcba987654321
 }
@@ -67,21 +67,21 @@ TEST(LedDriver, TurnOffAnyLed)
 TEST(LedDriver, AllOn)
 {
 	LedDriver_TurnAllOn();
-	CHECK_EQUAL(0xffff, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0xffff), virtualLeds);
 }
 
 TEST(LedDriver, AllOff)
 {
 	LedDriver_TurnAllOn();
 	LedDriver_TurnAllOff();
-	CHECK_EQUAL(0x0000, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0x0000), virtualLeds);
 }
 
 TEST(LedDriver, LedDriverIsNotReadable)
 {
-	virtualLeds = 0xffff;
+	virtualLeds = LED_IMAGE(0xffff);
 	LedDriver_TurnOn(8);
-	CHECK_EQUAL(0x80, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE(0x80), virtualLeds);
 }
 
 TEST(LedDriver, UpperAndLowerBounds)
@@ -89,36 +89,36 @@ TEST(LedDriver, UpperAndLowerBounds)
 	LedDriver_TurnOn(1);
 	LedDriver_TurnOn(16);
 
-	CHECK_EQUAL( 0x8001, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x8001), virtualLeds);
 	// 0x8001 : 1000000000000001
 	//        : 0fedcba987654321
 }
 
 TEST(LedDriver, OutOfBoundsTurnOnDoesNoHarm)
 {
-	CHECK_EQUAL( 0x0000, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x0000), virtualLeds);
 	LedDriver_TurnOn(-1);
-	CHECK_EQUAL( 0x0000, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x0000), virtualLeds);
 	LedDriver_TurnOn(0);
-	CHECK_EQUAL( 0x0000, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x0000), virtualLeds);
 	LedDriver_TurnOn(17);
-	CHECK_EQUAL( 0x0000, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x0000), virtualLeds);
 	LedDriver_TurnOn(3141);
-	CHECK_EQUAL( 0x0000, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0x0000), virtualLeds);
 }
 
 TEST(LedDriver, OutOfBoundsTurnOffDoesNoHarm)
 {
 	LedDriver_TurnAllOn();
-	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0xFFFF), virtualLeds);
 	LedDriver_TurnOff(-1);
-	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0xFFFF), virtualLeds);
 	LedDriver_TurnOff(0);
-	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0xFFFF), virtualLeds);
 	LedDriver_TurnOff(17);
-	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0xFFFF), virtualLeds);
 	LedDriver_TurnOff(3141);
-	CHECK_EQUAL( 0xFFFF, virtualLeds);
+	CHECK_EQUAL( LED_IMAGE(0xFFFF), virtualLeds);
 }
 
 IGNORE_TEST(LedDriver, OutofBoundsProducesRuntimeError)
@@ -156,7 +156,7 @@ TEST(LedDriver, TurnOffMultipleLeds)
 	LedDriver_TurnAllOn();
 	LedDriver_TurnOff(9);
 	LedDriver_TurnOff(8);
-	CHECK_EQUAL((~0x180)&0xFFFF, virtualLeds);
+	CHECK_EQUAL(LED_IMAGE((~0x180)&0xFFFF), virtualLeds);
 	// 0x180 : 0000000110000000
 	//       : 0fedcba987654321
 }

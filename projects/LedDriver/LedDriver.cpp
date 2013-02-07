@@ -25,7 +25,7 @@ static uint16_t convertLedNumberToBit(int ledNumber)
 
 static void updateHardware()
 {
-	*ledsAddress = ledsImage;
+	*ledsAddress = LED_IMAGE(ledsImage);
 }
 
 static bool IsLedOutOfBounds(int ledNumber)
