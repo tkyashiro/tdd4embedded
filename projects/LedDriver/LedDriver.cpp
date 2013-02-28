@@ -16,6 +16,7 @@ enum {ALL_LEDS_ON = ~0, ALL_LEDS_OFF = ~ALL_LEDS_ON};
 // •Ï”
 static uint16_t *ledsAddress;
 static uint16_t ledsImage;
+static uint8_t  ledLogic = LedDriver_PositiveLogic;
 
 // ŠÖ”
 static uint16_t convertLedNumberToBit(int ledNumber)
@@ -23,9 +24,18 @@ static uint16_t convertLedNumberToBit(int ledNumber)
 	return 1 << (ledNumber-1);
 }
 
+static uint16_t LedDriver_ActualLedImage(uint16_t positiveImage)
+{
+	if( ledLogic == LedDriver_PositiveLogic ){
+		return positiveImage;
+	}else{
+		return (~positiveImage);
+	}
+}
+
 static void updateHardware()
 {
-	*ledsAddress = LED_IMAGE(ledsImage);
+	*ledsAddress = LedDriver_ActualLedImage(ledsImage);
 }
 
 static bool IsLedOutOfBounds(int ledNumber)
@@ -43,10 +53,12 @@ static void clearLedImageBit(int ledNumber)
 	ledsImage &= ~(convertLedNumberToBit(ledNumber));
 }
 
-void LedDriver_Create(uint16_t *address)
+void LedDriver_Create(uint16_t *address, LedDriver_Logic logic)
 {
 	ledsAddress = address;
 	ledsImage = ALL_LEDS_OFF;
+	ledLogic = logic;
+
 	updateHardware();
 }
 
@@ -98,4 +110,5 @@ bool LedDriver_IsOff(int ledNumber)
 {
 	return ! LedDriver_IsOn(ledNumber);
 }
+
 

@@ -3,19 +3,12 @@
 
 #include <stdint.h>
 
-//TY@test
-#define INV_LOGIC 0
-#if INV_LOGIC
-#	define LED_IMAGE(val) ((0x0000ffff)&~(val)) // 下位16ビットだけ使用
-#else
-#	define LED_IMAGE(val) (val)
-#endif
-
+typedef enum { LedDriver_PositiveLogic = 0, LedDriver_NegativeLogic = 1} LedDriver_Logic;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-	void LedDriver_Create(uint16_t *address);
+	void LedDriver_Create(uint16_t *address, LedDriver_Logic logic );
 	void LedDriver_Destroy(void);
 	void LedDriver_TurnOn(int ledNumber);
 	void LedDriver_TurnOff(int ledNumber);
